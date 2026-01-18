@@ -1,55 +1,60 @@
 import React from 'react';
-import { LayoutDashboard, Map, Ship, Anchor, BarChart3, User, Bell } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
-const Sidebar = ({ activeTab, setActiveTab, userRole }) => {
-  // Define all possible menu items
-  const allItems = [
-    { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={20}/> },
-    { id: 'map', label: 'Live Map', icon: <Map size={20}/> },
-    { id: 'vessels', label: 'Vessels', icon: <Ship size={20}/> },
-    { id: 'ports', label: 'Ports', icon: <Anchor size={20}/> },
-    { id: 'analysis', label: 'Analysis', icon: <BarChart3 size={20}/> },
+const Sidebar = () => {
+  const location = useLocation();
+  const userRole = localStorage.getItem('userRole') || 'operator';
+
+  // MASTER MENU WITH ROLE DEFINITIONS
+  const allMenuItems = [
+    { path: '/overview', label: 'Overview', icon: '📊', roles: ['operator', 'admin'] },
+    { path: '/map', label: 'Fleet Map', icon: '📍', roles: ['operator', 'analyst', 'admin'] },
+    { path: '/ports', label: 'Port Hubs', icon: '⚓', roles: ['operator', 'admin'] },
+    { path: '/analytics', label: 'Analytics', icon: '📈', roles: ['operator', 'analyst'] },
+    { path: '/replay', label: 'Voyage Replay', icon: '⏪', roles: ['operator', 'analyst'] },
+    { path: '/admin', label: 'Admin Control', icon: '⚙️', roles: ['operator'] },
   ];
 
-  // Role-based filter logic
-  const rolePermissions = {
-    operator: ['overview', 'map', 'vessels', 'ports', 'analysis'],
-    analyst: ['map', 'analysis'],
-    admin: ['overview', 'ports', 'vessels']
-  };
+  // Filter items based on the logged-in role
+  const menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
 
-  // Get only the items allowed for the current role
-  const allowedIds = rolePermissions[userRole.toLowerCase()] || [];
-  const menuItems = allItems.filter(item => allowedIds.includes(item.id));
+  const styles = {
+    sidebar: {
+      width: '260px',
+      background: '#0f172a',
+      height: '100vh',
+      padding: '20px 15px',
+    },
+    logo: { color: '#38bdf8', fontSize: '20px', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' },
+    navLink: (isActive) => ({
+      display: 'flex',
+      alignItems: 'center',
+      textDecoration: 'none',
+      padding: '12px',
+      borderRadius: '10px',
+      marginBottom: '8px',
+      background: isActive ? '#0ea5e9' : 'transparent',
+      color: isActive ? '#fff' : '#94a3b8',
+      fontWeight: '500'
+    })
+  };
 
   return (
     <div style={styles.sidebar}>
-      <div style={styles.logo}>⚓ MVTPS COMMAND</div>
-      <nav style={styles.nav}>
+      <div style={styles.logo}>MVTPS PORTAL</div>
+      <p style={{ color: '#475569', fontSize: '10px', textAlign: 'center', marginBottom: '20px' }}>
+        ROLE: {userRole.toUpperCase()}
+      </p>
+      <nav>
         {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            style={{
-              ...styles.navItem,
-              backgroundColor: activeTab === item.id ? '#1e293b' : 'transparent',
-              color: activeTab === item.id ? '#38bdf8' : '#94a3b8'
-            }}
-          >
-            {item.icon}
-            <span style={{ marginLeft: '12px' }}>{item.label}</span>
-          </button>
+          <Link key={item.path} to={item.path} style={styles.navLink(location.pathname === item.path)}>
+            <span style={{ marginRight: '12px' }}>{item.icon}</span>
+            {item.label}
+          </Link>
         ))}
       </nav>
     </div>
   );
-};
-
-const styles = {
-  sidebar: { width: '260px', height: '100vh', backgroundColor: '#0f172a', display: 'flex', flexDirection: 'column', padding: '20px' },
-  logo: { color: '#38bdf8', fontSize: '18px', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' },
-  nav: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  navItem: { display: 'flex', alignItems: 'center', padding: '12px 15px', borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left', transition: '0.2s' }
 };
 
 export default Sidebar;
